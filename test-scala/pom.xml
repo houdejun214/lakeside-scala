@@ -1,0 +1,194 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.dj</groupId>
+  <artifactId>test-scala</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>${project.artifactId}</name>
+  <description>My wonderfull scala app</description>
+  <inceptionYear>2010</inceptionYear>
+  <licenses>
+    <license>
+      <name>My License</name>
+      <url>http://....</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <encoding>UTF-8</encoding>
+    <scala.tools.version>2.10</scala.tools.version>
+    <scala.version>2.10.3</scala.version>
+    <thrift.executable>/usr/local/bin/thrift</thrift.executable>
+    <maven-thrift-plugin.base.output.dir>${project.basedir}/target/generated-sources/thrift</maven-thrift-plugin.base.output.dir>
+    <maven-thrift-plugin.thrift.src.dir>${project.basedir}/src/main/thrift</maven-thrift-plugin.thrift.src.dir>
+  </properties>
+  
+  <repositories>
+    <repository>
+        <id>twitter-twttr</id>
+        <url>http://maven.twttr.com/</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.specs2</groupId>
+      <artifactId>specs2_${scala.tools.version}</artifactId>
+      <version>1.13</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- twitter finagle -->
+    <dependency>
+    	<groupId>com.twitter</groupId>
+    	<artifactId>finagle-thrift_2.10</artifactId>
+    	<version>6.13.0</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.apache.thrift</groupId>
+	  <artifactId>libthrift</artifactId>
+	  <version>0.9.1</version>
+	</dependency>
+	<dependency>
+	  <groupId>com.twitter</groupId>
+	  <artifactId>scrooge-core_2.10</artifactId>
+	  <version>3.12.3</version>
+	</dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <!-- see http://davidb.github.com/scala-maven-plugin -->
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <args>
+                <arg>-make:transitive</arg>
+                <arg>-dependencyfile</arg>
+                <arg>${project.build.directory}/.scala_dependencies</arg>
+              </args>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.13</version>
+        <configuration>
+          <useFile>false</useFile>
+          <disableXmlReport>true</disableXmlReport>
+          <!-- If you have classpath issue like NoDefClassError,... -->
+          <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+          <includes>
+            <include>**/*Test.*</include>
+            <include>**/*Suite.*</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+	<!-- 
+		build thrift: please specify the profile "buildthrift" when package 
+		with maven -->
+	<profile>
+		<id>buildthrift</id>
+		<activation>
+			<file>
+				<exists>${thrift.executable}</exists>
+			</file>
+		</activation>
+		<build>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.thrift.tools</groupId>
+					<artifactId>maven-thrift-plugin</artifactId>
+					<version>0.1.11</version>
+					<configuration>
+						<thriftExecutable>${thrift.executable}</thriftExecutable>
+						<thriftSourceRoot>${maven-thrift-plugin.thrift.src.dir}
+						</thriftSourceRoot>
+					</configuration>
+					<executions>
+						<!-- <execution>
+							<id>thrift-cpp-generation</id>
+							<configuration>
+								<generator>cpp</generator>
+								<outputDirectory>
+									${maven-thrift-plugin.base.output.dir}/cpp
+								</outputDirectory>
+							</configuration>
+							<goals>
+								<goal>compile</goal>
+							</goals>
+						</execution> -->
+						<!-- <execution>
+							<id>thrift-java-generation</id>
+							<configuration>
+								<generator>java</generator>
+								<outputDirectory>
+									${maven-thrift-plugin.base.output.dir}/java
+								</outputDirectory>
+							</configuration>
+							<goals>
+								<goal>compile</goal>
+							</goals>
+						</execution> -->
+					</executions>
+				</plugin>
+				<!-- for generator scala language -->
+		      	<plugin>
+			        <groupId>com.twitter</groupId>
+			        <artifactId>scrooge-maven-plugin</artifactId>
+			        <!-- this version must match the version from scrooge-gen.ivy.xml -->
+			        <version>3.12.3</version>
+			        <configuration>
+			          <language>scala</language> <!-- default is scala, can also be java -->
+			          <thriftOpts>
+			            <!-- add other Scrooge command line options using thriftOpts -->
+			            <thriftOpt>--finagle</thriftOpt>
+			          </thriftOpts>
+			          <dependencyIncludes>
+					    <include>${project.artifactId}</include>
+					  </dependencyIncludes>
+			        </configuration>
+			        <executions>
+			          <execution>
+			            <id>thrift-sources</id>
+			            <phase>generate-sources</phase>
+			            <goals>
+			              <goal>compile</goal>
+			            </goals>
+			          </execution>
+			        </executions>
+			      </plugin>
+		    </plugins>
+		</build>
+	</profile>
+  </profiles>
+</project>
