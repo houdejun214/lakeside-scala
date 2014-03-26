@@ -1,4 +1,4 @@
-package samples
+package com.dj.test.scala
 
 import org.junit._
 import Assert._

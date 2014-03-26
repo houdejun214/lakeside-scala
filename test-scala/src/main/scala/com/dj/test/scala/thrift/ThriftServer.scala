@@ -6,8 +6,11 @@ import com.dj.test.scala.thriftjava.Hello
 
 object ThriftServer {
   def main(args: Array[String]) {
-    val server = Thrift.serveIface("localhost:8080", new Hello[Future] {
-      def hi() = Future.value("hi")
+    val server = Thrift.serveIface("localhost:8081", new Hello[Future] {
+      def hi() = {
+        println("receive request")
+        Future.value("hi")
+      }
     })
     Await.ready(server)
   }

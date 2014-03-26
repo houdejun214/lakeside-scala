@@ -6,7 +6,7 @@ import com.twitter.util.Future
 
 object ThriftClient {
   def main(args: Array[String]) {
-    val client = Thrift.newIface[Hello[Future]]("localhost:8080")
+    val client = Thrift.newIface[Hello.FutureIface]("localhost:8081")
     client.hi() onSuccess { response =>
       println("Received response: " + response)
     }
